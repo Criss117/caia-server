@@ -37,15 +37,9 @@ public class UserController {
       @RequestParam @Nullable String query,
       @RequestParam @Nullable Integer page,
       @RequestParam @Nullable Integer offSet) {
-    List<UserSummaryDto> usersDto = userService.findByQuery(query, page, offSet);
+    List<UserSummaryDto> usersSummary = userService.findByQuery(query, page, offSet);
 
-    var users = CommonResponse.<List<UserSummaryDto>>builder()
-        .status(HttpStatus.OK.value())
-        .message("Users found")
-        .data(usersDto)
-        .build();
-
-    return ResponseEntity.ok(users);
+    return ResponseEntity.ok(CommonResponse.success(usersSummary, "Users found"));
   }
 
   /**
@@ -58,12 +52,9 @@ public class UserController {
   public ResponseEntity<CommonResponse<Void>> postMethodName(@RequestBody @Validated CreateUserDto createUserDto) {
     try {
       userService.createUser(createUserDto);
-      var commonResponse = CommonResponse.<Void>builder()
-          .status(HttpStatus.CREATED.value())
-          .message("User created successfully")
-          .build();
 
-      return ResponseEntity.status(HttpStatus.CREATED).body(commonResponse);
+      return ResponseEntity.status(HttpStatus.CREATED)
+          .body(CommonResponse.success("User created successfully"));
     } catch (Exception e) {
 
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -85,11 +76,6 @@ public class UserController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     }
 
-    var commonResponse = CommonResponse.<Void>builder()
-        .status(HttpStatus.CREATED.value())
-        .message("User confirmed  successfully")
-        .build();
-
-    return ResponseEntity.ok(commonResponse);
+    return ResponseEntity.ok(CommonResponse.success("User confirmed  successfully"));
   }
 }

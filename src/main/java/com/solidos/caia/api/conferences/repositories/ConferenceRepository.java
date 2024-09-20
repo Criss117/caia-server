@@ -23,4 +23,5 @@ public interface ConferenceRepository extends JpaRepository<ConferenceEntity, Lo
       "WHERE (c.id = ?1 OR c.slug = ?2) " +
       "AND c.auditMetadata.deletedAt IS NULL")
   Optional<ConferenceEntity> findByIdOrSlug(Long id, String slug);
+
 }

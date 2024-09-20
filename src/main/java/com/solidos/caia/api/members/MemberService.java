@@ -1,6 +1,7 @@
 package com.solidos.caia.api.members;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.logging.log4j.util.InternalException;
 import org.springframework.data.domain.Pageable;
@@ -8,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.solidos.caia.api.common.enums.RoleEnum;
+import com.solidos.caia.api.members.adapters.MemberEntityAdapter;
 import com.solidos.caia.api.members.dto.CreateMemberDto;
+import com.solidos.caia.api.members.dto.MemberSummary;
 import com.solidos.caia.api.members.entities.MemberComposeId;
 import com.solidos.caia.api.members.entities.MemberEntity;
 import com.solidos.caia.api.members.repositories.MemberRepository;
@@ -39,7 +42,6 @@ public class MemberService {
         .build();
 
     try {
-
       memberRepository.save(memberEntity);
     } catch (Exception e) {
       throw new InternalException("Error creating member");
@@ -53,4 +55,13 @@ public class MemberService {
         .toList();
   }
 
+  public List<MemberSummary> findByConferenceId(Long conferenceId, Pageable pageable) {
+    List<MemberEntity> members = memberRepository.findAllByConferenceId(conferenceId, pageable);
+
+    return MemberEntityAdapter.toMemberSummary(members);
+  }
+
+  public Optional<MemberEntity> findByComposeId(Long conferenceId, Long userId) {
+    return memberRepository.findByComposeId(conferenceId, userId);
+  }
 }

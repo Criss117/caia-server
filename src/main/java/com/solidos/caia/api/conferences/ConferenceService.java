@@ -2,6 +2,7 @@ package com.solidos.caia.api.conferences;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import com.solidos.caia.api.conferences.entities.ConferenceEntity;
 import com.solidos.caia.api.conferences.repositories.ConferenceRepository;
 import com.solidos.caia.api.members.MemberService;
 import com.solidos.caia.api.members.dto.CreateMemberDto;
+import com.solidos.caia.api.members.dto.MemberSummary;
 import com.solidos.caia.api.members.entities.MemberEntity;
 
 @Service
@@ -53,6 +55,7 @@ public class ConferenceService {
             .build());
 
     return newConference;
+
   }
 
   public List<ConferenceSummaryDto> findAllConferences(String query, Integer page, Integer offSet) {
@@ -107,5 +110,26 @@ public class ConferenceService {
     return members.stream()
         .filter(m -> m.getConferenceEntity().getName().contains(data.getQuery()))
         .map(m -> ConferenceEntityAdapter.toConferenceSummary(m.getConferenceEntity())).toList();
+  }
+
+  public List<MemberSummary> findMembers(String idOrSlug, Integer page, Integer offSet) {
+    Long conferenceId = null;
+    String slug = idOrSlug;
+
+    try {
+      conferenceId = Long.parseLong(idOrSlug);
+    } catch (Exception e) {
+      slug = idOrSlug;
+    }
+
+    if (conferenceId == null) {
+      conferenceId = this.findByIdOrSlug(slug).getId();
+    }
+
+    System.out.println(conferenceId);
+
+    Pageable pageable = PaginationParams.of(page, offSet);
+
+    return memberService.findByConferenceId(conferenceId, pageable);
   }
 }

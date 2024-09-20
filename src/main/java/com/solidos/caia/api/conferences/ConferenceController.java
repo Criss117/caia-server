@@ -11,6 +11,7 @@ import com.solidos.caia.api.conferences.dto.ConferenceSummaryDto;
 import com.solidos.caia.api.conferences.dto.ConferencesByRoleDto;
 import com.solidos.caia.api.conferences.dto.CreateConferenceDto;
 import com.solidos.caia.api.conferences.entities.ConferenceEntity;
+import com.solidos.caia.api.members.dto.MemberSummary;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/conferences")
-@PreAuthorize("authenticated")
+@PreAuthorize("permitAll()")
 public class ConferenceController {
 
   private ConferenceService conferenceService;
@@ -40,18 +41,34 @@ public class ConferenceController {
     this.authService = authService;
   }
 
+  @GetMapping
+  @PreAuthorize("permitAll()")
+  public ResponseEntity<CommonResponse<List<ConferenceSummaryDto>>> findAllConferences(
+      @RequestParam @Nullable String query,
+      @RequestParam @Nullable Integer page,
+      @RequestParam @Nullable Integer offSet) {
+    var conferences = conferenceService.findAllConferences(query, page, offSet);
+
+    return ResponseEntity.ok(CommonResponse.success(conferences, "Conferences found"));
+  }
+
+  @PostMapping
+  @PreAuthorize("authenticated")
+  public ResponseEntity<CommonResponse<ConferenceEntity>> postMethodName(
+      @RequestBody CreateConferenceDto createConferenceDto) {
+
+    ConferenceEntity newConference = conferenceService.createConference(createConferenceDto);
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(CommonResponse.success(newConference, "Conference created successfully"));
+  }
+
   @GetMapping("/{idOrSlug}")
   @PreAuthorize("permitAll()")
   public ResponseEntity<CommonResponse<ConferenceEntity>> getConference(@PathVariable String idOrSlug) {
     var conference = conferenceService.findByIdOrSlug(idOrSlug);
 
-    var commonResponse = CommonResponse.<ConferenceEntity>builder()
-        .status(HttpStatus.OK.value())
-        .message("Conference found")
-        .data(conference)
-        .build();
-
-    return ResponseEntity.ok(commonResponse);
+    return ResponseEntity.ok(CommonResponse.success(conference, "Conference found"));
   }
 
   @GetMapping("/by-role/{role}")
@@ -71,43 +88,20 @@ public class ConferenceController {
         .userId(userId)
         .build();
 
-    var commonResponse = CommonResponse.<List<ConferenceSummaryDto>>builder()
-        .status(HttpStatus.OK.value())
-        .message("Conferences found")
-        .data(conferenceService.findConferencesByRole(conferencesByRoleDto))
-        .build();
+    var conferencesByRole = conferenceService.findConferencesByRole(conferencesByRoleDto);
 
-    return ResponseEntity.ok(commonResponse);
+    return ResponseEntity.ok(CommonResponse.success(conferencesByRole, "Conferences found"));
   }
 
-  @GetMapping
+  @GetMapping("/{idOrSlug}/members")
   @PreAuthorize("permitAll()")
-  public ResponseEntity<CommonResponse<List<ConferenceSummaryDto>>> findAllConferences(
-      @RequestParam @Nullable String query,
+  public ResponseEntity<CommonResponse<List<MemberSummary>>> findMembers(
+      @PathVariable String idOrSlug,
       @RequestParam @Nullable Integer page,
       @RequestParam @Nullable Integer offSet) {
 
-    var commonResponse = CommonResponse.<List<ConferenceSummaryDto>>builder()
-        .status(HttpStatus.OK.value())
-        .message("Conferences found")
-        .data(conferenceService.findAllConferences(query, page, offSet))
-        .build();
+    List<MemberSummary> members = conferenceService.findMembers(idOrSlug, page, offSet);
 
-    return ResponseEntity.ok(commonResponse);
-  }
-
-  @PostMapping
-  public ResponseEntity<CommonResponse<ConferenceEntity>> postMethodName(
-      @RequestBody CreateConferenceDto createConferenceDto) {
-
-    ConferenceEntity newConference = conferenceService.createConference(createConferenceDto);
-
-    var commonResponse = CommonResponse.<ConferenceEntity>builder()
-        .status(HttpStatus.CREATED.value())
-        .message("Conference created successfully")
-        .data(newConference)
-        .build();
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(commonResponse);
+    return ResponseEntity.ok(CommonResponse.success(members, "Members found"));
   }
 }

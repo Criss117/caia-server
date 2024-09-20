@@ -50,16 +50,12 @@ public class JwtHelper {
       return JWT.require(algorithm).withIssuer(this.userGenerator).build().verify(token);
 
     } catch (JWTVerificationException e) {
-      throw new JWTVerificationException("Not authorized to access this resource");
+      throw new JWTVerificationException("Not authorized to access this resourcexdddd");
     }
   }
 
   public String extractEmail(DecodedJWT decodedJWT) {
     return decodedJWT.getSubject().toString();
-  }
-
-  public String getUserName(String token) {
-    return validateToken(token).getSubject().toString();
   }
 
   public Claim getSpecificClaim(DecodedJWT decodedJWT, String claimName) {
