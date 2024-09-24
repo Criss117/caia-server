@@ -42,6 +42,7 @@ public class MemberService {
         .build();
 
     try {
+      System.out.println("MemberEntity: " + memberEntity);
       memberRepository.save(memberEntity);
     } catch (Exception e) {
       throw new InternalException("Error creating member");
@@ -63,5 +64,15 @@ public class MemberService {
 
   public Optional<MemberEntity> findByComposeId(Long conferenceId, Long userId) {
     return memberRepository.findByComposeId(conferenceId, userId);
+  }
+
+  public Optional<MemberEntity> findByComposeId(Long conferenceId, Long userId, RoleEnum role) {
+    var member = memberRepository.findByComposeId(conferenceId, userId);
+
+    if (!member.isPresent() || member.get().getRoleEntity().getRole() != role) {
+      return Optional.empty();
+    }
+
+    return member;
   }
 }
