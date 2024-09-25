@@ -38,10 +38,10 @@ public class InvitationsService {
   public InvitationEntity createInvitation(CreateInvitationDto createInvitationDto) {
     membersPermissions.hasConferencePermission(createInvitationDto.getConferenceId(), RoleEnum.ORGANIZER);
 
-    Boolean existsMember = memberService
-        .findByComposeId(createInvitationDto.getConferenceId(), createInvitationDto.getUserId()).isPresent();
+    Boolean notExistsMember = memberService
+        .findByComposeId(createInvitationDto.getConferenceId(), createInvitationDto.getUserId()).isEmpty();
 
-    if (existsMember) {
+    if (!notExistsMember) {
       throw new IllegalStateException("Member already exists");
     }
 

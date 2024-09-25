@@ -62,12 +62,13 @@ public class MemberService {
     return MemberEntityAdapter.toMemberSummary(members);
   }
 
-  public Optional<MemberEntity> findByComposeId(Long conferenceId, Long userId) {
+  public List<MemberEntity> findByComposeId(Long conferenceId, Long userId) {
     return memberRepository.findByComposeId(conferenceId, userId);
   }
 
   public Optional<MemberEntity> findByComposeId(Long conferenceId, Long userId, RoleEnum role) {
-    var member = memberRepository.findByComposeId(conferenceId, userId);
+    Long roleId = roleRepository.findRoleId(role);
+    Optional<MemberEntity> member = memberRepository.findByComposeId(conferenceId, userId, roleId);
 
     if (!member.isPresent() || member.get().getRoleEntity().getRole() != role) {
       return Optional.empty();

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import com.solidos.caia.api.members.MemberService;
 import com.solidos.caia.api.members.MembersPermissions;
 import com.solidos.caia.api.members.dto.CreateMemberDto;
 import com.solidos.caia.api.papers.dto.CreatePaperDto;
+import com.solidos.caia.api.papers.dto.ListPapersDto;
 import com.solidos.caia.api.papers.entities.PaperEntity;
 import com.solidos.caia.api.papers.repositories.PaperRepository;
 import com.solidos.caia.api.users.entities.UserEntity;
@@ -115,5 +117,15 @@ public class PaperService {
     } catch (Exception e) {
       throw new Exception("Error uploading file");
     }
+  }
+
+  public ListPapersDto findAllPapers(Long conferenceId) {
+    List<RoleEnum> userRole = membersPermissions.getUserRole(conferenceId);
+    List<PaperEntity> papers = paperRepository.findAllByConferenceId(conferenceId);
+
+    return ListPapersDto.builder()
+        .papers(papers)
+        .withRole(userRole)
+        .build();
   }
 }

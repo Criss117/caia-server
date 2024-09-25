@@ -1,7 +1,7 @@
 package com.solidos.caia.api.members.repositories;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,5 +24,12 @@ public interface MemberRepository extends JpaRepository<MemberEntity, MemberComp
       "WHERE m.memberComposeId.conferenceId = ?1 AND " +
       "m.memberComposeId.userId = ?2 AND " +
       "m.auditMetadata.deletedAt IS NULL")
-  Optional<MemberEntity> findByComposeId(Long conferenceId, Long userId);
+  List<MemberEntity> findByComposeId(Long conferenceId, Long userId);
+
+  @Query("SELECT m FROM MemberEntity m " +
+      "WHERE m.memberComposeId.conferenceId = ?1 AND " +
+      "m.memberComposeId.userId = ?2 AND " +
+      "m.memberComposeId.roleId = ?3 AND " +
+      "m.auditMetadata.deletedAt IS NULL")
+  Optional<MemberEntity> findByComposeId(Long conferenceId, Long userId, Long roleId);
 }

@@ -1,6 +1,7 @@
 package com.solidos.caia.api.members;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.solidos.caia.api.auth.AuthService;
 import com.solidos.caia.api.common.enums.RoleEnum;
 import com.solidos.caia.api.members.entities.MemberComposeId;
 import com.solidos.caia.api.members.entities.MemberEntity;
+import com.solidos.caia.api.members.entities.RoleEntity;
 import com.solidos.caia.api.members.repositories.MemberRepository;
 import com.solidos.caia.api.members.repositories.RoleRepository;
 
@@ -54,5 +56,24 @@ public class MembersPermissions {
     }
 
     return userId;
+  }
+
+  public List<RoleEnum> getUserRole(Long conferenceId) {
+    Long userId = authService.getUserIdByEmail();
+
+    if (userId == null) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+    }
+
+    List<MemberEntity> members = memberRepository.findByComposeId(conferenceId, userId);
+
+    if (members.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not authorized");
+    }
+
+    return members.stream()
+        .map(MemberEntity::getRoleEntity)
+        .map(RoleEntity::getRole)
+        .toList();
   }
 }
