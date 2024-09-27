@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +20,11 @@ import com.solidos.caia.api.members.dto.CreateMemberDto;
 import com.solidos.caia.api.papers.dto.CreatePaperDto;
 import com.solidos.caia.api.papers.dto.ListPapersDto;
 import com.solidos.caia.api.papers.entities.PaperEntity;
+import com.solidos.caia.api.papers.entities.PaperReviewerComposeId;
+import com.solidos.caia.api.papers.entities.PaperReviewerEntity;
+import com.solidos.caia.api.papers.enums.PaperStateEnum;
 import com.solidos.caia.api.papers.repositories.PaperRepository;
+import com.solidos.caia.api.papers.repositories.PaperReviewerRepository;
 import com.solidos.caia.api.users.entities.UserEntity;
 
 import jakarta.transaction.Transactional;
@@ -28,15 +33,18 @@ import jakarta.transaction.Transactional;
 public class PaperService {
 
   private final PaperRepository paperRepository;
+  private final PaperReviewerRepository paperReviewerRepository;
   private final MemberService memberService;
   private final MembersPermissions membersPermissions;
 
   public PaperService(
       PaperRepository paperRepository,
       MembersPermissions membersPermissions,
+      PaperReviewerRepository paperReviewerRepository,
       MemberService memberService) {
     this.paperRepository = paperRepository;
     this.membersPermissions = membersPermissions;
+    this.paperReviewerRepository = paperReviewerRepository;
     this.memberService = memberService;
   }
 
@@ -127,5 +135,59 @@ public class PaperService {
         .papers(papers)
         .withRole(userRole)
         .build();
+  }
+
+  public PaperEntity findById(Long id) {
+    PaperEntity paper = paperRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Paper not found"));
+
+    return paper;
+
+    // return PaperEntity.builder()
+    // .id(paper.getId())
+    // .title(paper.getTitle())
+    // .description(paper.getDescription())
+    // .fileName(paper.getFileName())
+    // .keys(paper.getKeys())
+    // .state(paper.getState())
+    // .auditMetadata(paper.getAuditMetadata())
+    // .conferenceEntity(paper.getConferenceEntity())
+    // .build();
+  }
+
+  @Transactional
+  public PaperReviewerEntity addNewReviewer(Long paperId, Long userId) {
+    Optional<PaperReviewerEntity> existingPaperReviewer = paperReviewerRepository.findByComposeId(userId, paperId);
+
+    if (existingPaperReviewer.isPresent()) {
+      throw new IllegalArgumentException("Reviewer already exists");
+    }
+
+    PaperEntity paper = this.findById(paperId);
+
+    ConferenceEntity conference = paper.getConferenceEntity();
+
+    membersPermissions.hasConferencePermission(conference.getId(), RoleEnum.ORGANIZER);
+
+    if (userId.equals(paper.getUserEntity().getId())) {
+      throw new IllegalArgumentException("You cannot add yourself as a reviewer");
+    }
+
+    memberService.findByComposeId(conference.getId(), userId, RoleEnum.REVIEWER).orElseThrow(
+        () -> new IllegalArgumentException("User not found"));
+
+    PaperReviewerComposeId paperReviewerComposeId = PaperReviewerComposeId.builder()
+        .userId(userId)
+        .paperId(paperId)
+        .build();
+
+    PaperReviewerEntity newPaperReviewer = paperReviewerRepository.save(PaperReviewerEntity.builder()
+        .paperReviewerComposeId(paperReviewerComposeId)
+        .build());
+
+    paper.setState(PaperStateEnum.UNDER_REVIEW);
+    paperRepository.save(paper);
+
+    return newPaperReviewer;
   }
 }

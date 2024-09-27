@@ -126,8 +126,6 @@ public class ConferenceService {
       conferenceId = this.findByIdOrSlug(slug).getId();
     }
 
-    System.out.println(conferenceId);
-
     Pageable pageable = PaginationParams.of(page, offSet);
 
     return memberService.findByConferenceId(conferenceId, pageable);

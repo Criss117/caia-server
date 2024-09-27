@@ -1,6 +1,9 @@
 package com.solidos.caia.api.papers.entities;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.solidos.caia.api.common.entities.AuditMetadata;
 import com.solidos.caia.api.conferences.entities.ConferenceEntity;
 import com.solidos.caia.api.papers.enums.PaperStateEnum;
@@ -11,17 +14,20 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "papers")
@@ -30,6 +36,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class PaperEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,13 +44,17 @@ public class PaperEntity {
 
   @ManyToOne
   @JoinColumn(name = "owner_id", updatable = false)
-  // @JsonBackReference
+  @JsonBackReference
   private UserEntity userEntity;
 
   @ManyToOne
   @JoinColumn(name = "conference_id", updatable = false)
   @JsonBackReference
   private ConferenceEntity conferenceEntity;
+
+  @OneToMany(targetEntity = PaperReviewerEntity.class, mappedBy = "paperEntity", fetch = FetchType.LAZY)
+  @JsonManagedReference
+  private List<PaperReviewerEntity> paperReviewers;
 
   @Column(nullable = false)
   private String title;

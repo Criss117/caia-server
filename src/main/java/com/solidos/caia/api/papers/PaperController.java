@@ -1,16 +1,14 @@
 package com.solidos.caia.api.papers;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.solidos.caia.api.common.enums.RoleEnum;
 import com.solidos.caia.api.common.models.CommonResponse;
 import com.solidos.caia.api.papers.dto.CreatePaperDto;
 import com.solidos.caia.api.papers.dto.ListPapersDto;
 import com.solidos.caia.api.papers.entities.PaperEntity;
+import com.solidos.caia.api.papers.entities.PaperReviewerEntity;
 
 import jakarta.validation.Valid;
 
@@ -34,7 +32,6 @@ public class PaperController {
   @PostMapping
   public ResponseEntity<CommonResponse<PaperEntity>> createPaper(
       @ModelAttribute @Valid CreatePaperDto createPaperDto, MultipartFile file) throws Exception {
-
     PaperEntity newPaper = paperService.createpaper(createPaperDto, file);
 
     return ResponseEntity.ok(CommonResponse.success(newPaper, "Paper created"));
@@ -45,5 +42,20 @@ public class PaperController {
     ListPapersDto papers = paperService.findAllPapers(conferenceId);
 
     return ResponseEntity.ok(CommonResponse.success(papers, "Papers found"));
+  }
+
+  @GetMapping("/{paperId}")
+  public ResponseEntity<CommonResponse<PaperEntity>> getPaper(@PathVariable Long paperId) {
+    PaperEntity paper = paperService.findById(paperId);
+
+    return ResponseEntity.ok(CommonResponse.success(paper, "Paper found"));
+  }
+
+  @PostMapping("/{paperId}/new-reviewer/{userId}")
+  public ResponseEntity<CommonResponse<PaperReviewerEntity>> addNewReviewer(@PathVariable Long paperId,
+      @PathVariable Long userId) {
+    PaperReviewerEntity paperReviewer = paperService.addNewReviewer(paperId, userId);
+
+    return ResponseEntity.ok(CommonResponse.success(paperReviewer, "Reviewer added"));
   }
 }

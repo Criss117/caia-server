@@ -42,7 +42,6 @@ public class MemberService {
         .build();
 
     try {
-      System.out.println("MemberEntity: " + memberEntity);
       memberRepository.save(memberEntity);
     } catch (Exception e) {
       throw new InternalException("Error creating member");

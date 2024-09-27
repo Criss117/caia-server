@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequestMapping("/users")
 @PreAuthorize("permitAll()")
 public class UserController {
+
   private UserService userService;
 
   public UserController(UserService userService) {
@@ -49,7 +50,7 @@ public class UserController {
    * @return a response with a success message.
    */
   @PostMapping
-  public ResponseEntity<CommonResponse<Void>> postMethodName(@RequestBody @Validated CreateUserDto createUserDto) {
+  public ResponseEntity<CommonResponse<Void>> createUser(@RequestBody @Validated CreateUserDto createUserDto) {
     try {
       userService.createUser(createUserDto);
 
