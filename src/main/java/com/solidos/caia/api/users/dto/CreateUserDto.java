@@ -3,9 +3,11 @@ package com.solidos.caia.api.users.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class CreateUserDto {
   @NotNull(message = "First name cannot be null")
   String firstName;
