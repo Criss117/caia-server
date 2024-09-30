@@ -98,9 +98,11 @@ public class ConferenceController {
   public ResponseEntity<CommonResponse<List<MemberSummary>>> findMembers(
       @PathVariable String idOrSlug,
       @RequestParam @Nullable Integer page,
-      @RequestParam @Nullable Integer offSet) {
+      @RequestParam @Nullable Integer offSet,
+      @RequestParam @Nullable RoleEnum withrole
+      ) {
 
-    List<MemberSummary> members = conferenceService.findMembers(idOrSlug, page, offSet);
+    List<MemberSummary> members = conferenceService.findMembers(idOrSlug, page, offSet, withrole);
 
     return ResponseEntity.ok(CommonResponse.success(members, "Members found"));
   }

@@ -41,7 +41,7 @@ public class UserService {
    * @throws InternalException       if there is an error creating the user.
    */
   @Transactional
-  public void createUser(CreateUserDto createUserDto) {
+  public UserEntity createUser(CreateUserDto createUserDto) {
     Optional<UserEntity> existsUser = userRepository.findByEmail(createUserDto.getEmail());
 
     if (existsUser.isPresent()) {
@@ -65,7 +65,7 @@ public class UserService {
     // TODO: Send Email
 
     try {
-      userRepository.save(userEntity);
+      return userRepository.save(userEntity);
     } catch (Exception e) {
       throw new InternalException("Error creating user");
     }

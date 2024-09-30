@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.solidos.caia.api.common.models.CommonResponse;
 import com.solidos.caia.api.users.dto.CreateUserDto;
 import com.solidos.caia.api.users.dto.UserSummaryDto;
+import com.solidos.caia.api.users.entities.UserEntity;
 
 import jakarta.annotation.Nullable;
 
@@ -50,12 +51,12 @@ public class UserController {
    * @return a response with a success message.
    */
   @PostMapping
-  public ResponseEntity<CommonResponse<Void>> createUser(@RequestBody @Validated CreateUserDto createUserDto) {
+  public ResponseEntity<CommonResponse<UserEntity>> createUser(@RequestBody @Validated CreateUserDto createUserDto) {
     try {
-      userService.createUser(createUserDto);
+      UserEntity user = userService.createUser(createUserDto);
 
       return ResponseEntity.status(HttpStatus.CREATED)
-          .body(CommonResponse.success("User created successfully"));
+          .body(CommonResponse.success(user, "User created successfully"));
     } catch (Exception e) {
 
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
