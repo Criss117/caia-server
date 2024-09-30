@@ -22,11 +22,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-
 
 @RestController
 @RequestMapping("/papers")
@@ -67,6 +64,7 @@ public class PaperController {
 
     return ResponseEntity.ok(CommonResponse.success(paperReviewer, "Reviewer added"));
   }
+
   @GetMapping("/by-conference/{conferenceId}/to-review")
   public ResponseEntity<CommonResponse<List<PaperEntity>>> getAllReviewers(@PathVariable @Valid Long conferenceId) {
     List<PaperEntity> papers = paperService.findAllByUserId(conferenceId);
@@ -75,7 +73,8 @@ public class PaperController {
   }
 
   @PutMapping("/{paperId}/state")
-  public ResponseEntity<CommonResponse<PaperEntity>> changePaperState(@PathVariable @Validated Long paperId, @RequestBody ChangeStateDto changeStateDto) {
+  public ResponseEntity<CommonResponse<PaperEntity>> changePaperState(@PathVariable @Validated Long paperId,
+      @RequestBody ChangeStateDto changeStateDto) {
     PaperEntity paper = paperService.updatePaperState(paperId, changeStateDto.getState());
 
     return ResponseEntity.ok(CommonResponse.success(paper, "State updated"));
