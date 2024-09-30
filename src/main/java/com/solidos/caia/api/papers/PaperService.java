@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -189,5 +190,42 @@ public class PaperService {
     paperRepository.save(paper);
 
     return newPaperReviewer;
+  }
+
+  public List<PaperEntity> findAllByUserId(Long conferenceId){
+    Long userId = membersPermissions.hasConferencePermission(conferenceId, RoleEnum.REVIEWER);
+
+    List<PaperReviewerEntity> paperReviewers = paperReviewerRepository.findAllByUserId(userId);
+
+    List<PaperEntity> papers = paperReviewers.stream()
+        .map(PaperReviewerEntity::getPaperReviewerComposeId)
+        .map(PaperReviewerComposeId::getPaperId)
+        .map(this::findById)
+        .toList();
+
+    return papers;
+  }
+  
+  @Transactional
+  public PaperEntity updatePaperState(Long paperId, PaperStateEnum state){
+    PaperEntity paper = paperRepository.findById(paperId).orElseThrow(
+      () -> new IllegalArgumentException("Paper not fund"));
+    
+    Long userId = membersPermissions.hasConferencePermission(paper.getConferenceEntity().getId(), RoleEnum.REVIEWER);
+
+    if (userId.equals(paper.getUserEntity().getId())){
+      throw new IllegalArgumentException("You cannot update the state of your own paper");
+    }
+
+    PaperReviewerEntity paperReviewerEntity = paperReviewerRepository.findByComposeId(userId, paperId).orElseThrow(
+      () -> new IllegalArgumentException("Paper reviewer not found"));
+
+    if (!paperReviewerEntity.getPaperReviewerComposeId().getPaperId().equals(paperId)){
+      throw new IllegalArgumentException("Paper reviewer not found");
+    }
+
+    paper.setState(state);
+
+    return paperRepository.save(paper);
   }
 }
