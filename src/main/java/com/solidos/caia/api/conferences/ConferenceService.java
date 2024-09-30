@@ -112,7 +112,7 @@ public class ConferenceService {
         .map(m -> ConferenceEntityAdapter.toConferenceSummary(m.getConferenceEntity())).toList();
   }
 
-  public List<MemberSummary> findMembers(String idOrSlug, Integer page, Integer offSet) {
+  public List<MemberSummary> findMembers(String idOrSlug, Integer page, Integer offSet,RoleEnum withrole) {
     Long conferenceId = null;
     String slug = idOrSlug;
 
@@ -127,7 +127,10 @@ public class ConferenceService {
     }
 
     Pageable pageable = PaginationParams.of(page, offSet);
-
-    return memberService.findByConferenceId(conferenceId, pageable);
+    List<MemberSummary> members = memberService.findByConferenceId(conferenceId,pageable);
+    if(withrole != null){
+      return members.stream().filter(m -> m.getRole().equals(withrole)).toList();
+    }
+    return members;
   }
 }
