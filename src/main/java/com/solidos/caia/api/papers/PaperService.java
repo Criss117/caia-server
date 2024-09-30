@@ -8,9 +8,11 @@ import java.util.UUID;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.solidos.caia.api.auth.AuthService;
 import com.solidos.caia.api.common.enums.RoleEnum;
 import com.solidos.caia.api.common.utils.PaperKeys;
 import com.solidos.caia.api.conferences.entities.ConferenceEntity;
@@ -32,6 +34,8 @@ import jakarta.transaction.Transactional;
 @Service
 public class PaperService {
 
+  @Autowired
+  private AuthService authService;
   private final PaperRepository paperRepository;
   private final PaperReviewerRepository paperReviewerRepository;
   private final MemberService memberService;
@@ -50,7 +54,10 @@ public class PaperService {
 
   @Transactional
   public PaperEntity createpaper(CreatePaperDto createPaperDto, MultipartFile file) throws Exception {
-    Long userId = membersPermissions.hasConferencePermission(createPaperDto.getConferenceId(), RoleEnum.ORGANIZER);
+    // Long userId =
+    // membersPermissions.hasConferencePermission(createPaperDto.getConferenceId(),
+    // RoleEnum.ORGANIZER);
+    Long userId = authService.getUserIdByEmail();
 
     String fileName = this.uploadFile(file);
 
