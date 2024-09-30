@@ -1,10 +1,13 @@
 package com.solidos.caia.api.papers;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.solidos.caia.api.common.models.CommonResponse;
+import com.solidos.caia.api.papers.dto.ChangeStateDto;
 import com.solidos.caia.api.papers.dto.CreatePaperDto;
 import com.solidos.caia.api.papers.dto.ListPapersDto;
 import com.solidos.caia.api.papers.entities.PaperEntity;
@@ -14,10 +17,16 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+
 
 @RestController
 @RequestMapping("/papers")
@@ -57,5 +66,18 @@ public class PaperController {
     PaperReviewerEntity paperReviewer = paperService.addNewReviewer(paperId, userId);
 
     return ResponseEntity.ok(CommonResponse.success(paperReviewer, "Reviewer added"));
+  }
+  @GetMapping("/by-conference/{conferenceId}/to-review")
+  public ResponseEntity<CommonResponse<List<PaperEntity>>> getAllReviewers(@PathVariable @Valid Long conferenceId) {
+    List<PaperEntity> papers = paperService.findAllByUserId(conferenceId);
+
+    return ResponseEntity.ok(CommonResponse.success(papers, "Reviewers found"));
+  }
+
+  @PutMapping("/{paperId}/state")
+  public ResponseEntity<CommonResponse<PaperEntity>> changePaperState(@PathVariable @Validated Long paperId, @RequestBody ChangeStateDto changeStateDto) {
+    PaperEntity paper = paperService.updatePaperState(paperId, changeStateDto.getState());
+
+    return ResponseEntity.ok(CommonResponse.success(paper, "State updated"));
   }
 }
